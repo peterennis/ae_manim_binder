@@ -1,47 +1,39 @@
+%%manim -qm -v WARNING Label3DAxes
 # Magic for use in Jupyter Notebook
-# %%manim -qm -v WARNING Label3DAxes
 
 from manim import *
 
 class Label3DAxes(ThreeDScene):
     def construct(self):
-        # Set camera so XY plane is front-facing, Z comes out
-        #self.set_camera_orientation(phi=0 * DEGREES, theta=90 * DEGREES)
+        # Make XY plane like 2D: X right, Y up, Z out of screen:
+        self.set_camera_orientation(phi=0 * DEGREES, theta=-90 * DEGREES)
+        # phi = 0 → no tilt (we’re in the XY plane)
+        # theta = -90° → rotates the camera so X points right, Y up, and Z comes out
 
-        # Create 3D axes
         axes = ThreeDAxes(
-            x_range=[-2.5, 2.5, 1],
-            y_range=[-2.5, 2.5, 1],
-            z_range=[-2.5, 2.5, 1],
-            x_length=5,
-            y_length=5,
-            z_length=5
+            x_range=[-2, 2, 1],
+            y_range=[-2, 2, 1],
+            z_range=[-2, 2, 1],
+            x_length=4, y_length=4, z_length=4
         ).add_coordinates()
         self.add(axes)
 
-        # Create MathTex labels
-        x_label = MathTex("X").scale(1.2).move_to(axes.c2p(2.75, 0, 0))
-        y_label = MathTex("Y").scale(1.2).move_to(axes.c2p(0, 2.75, 0))
-        z_label = MathTex("Z").scale(1.2).move_to(axes.c2p(0, 0, 2.75))
+        # Labels placed just outside the axes ticks:
+        x_label = MathTex("X").scale(1.2).move_to(axes.c2p(2.5, 0, 0))
+        y_label = MathTex("Y").scale(1.2).move_to(axes.c2p(0, 2.5, 0))
+        z_label = MathTex("Z").scale(1.2).move_to(axes.c2p(0, 0, 2.5))
 
-        # Save original orientation to prevent spinning
-        for label in [x_label, y_label, z_label]:
-            label.save_state()
+        # Tell the 3D camera/scene to keep these mobjects with fixed orientation
+        # (the right API for v0.19.0)
+        self.add_fixed_orientation_mobjects(x_label, y_label, z_label)
+        self.add(x_label, y_label, z_label)
 
-        def face_camera(label):
-            label.restore()
-            label.rotate(-self.camera.get_phi(), axis=RIGHT)
-            label.rotate(-self.camera.get_theta(), axis=UP)
-
-        for label in [x_label, y_label, z_label]:
-            label.add_updater(face_camera)
-            self.add(label)
-
-        # Add a cube for spatial reference
+        # Reference cube:
         cube = Cube(side_length=2).move_to(axes.c2p(0, 0, 0))
         self.add(cube)
 
+        # Choose the rotation you want:
         # Rotate around Z axis (depth)
-        self.begin_ambient_camera_rotation(rate=0.2, about="gamma")
+        self.begin_ambient_camera_rotation(rate=0.2, about='gamma')
         self.wait(8)
         self.stop_ambient_camera_rotation()
